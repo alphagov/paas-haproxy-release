@@ -39,14 +39,11 @@ properties:
   request_timeout_in_seconds:
     description: "Server and client timeouts in seconds"
     default: 900
-  router.servers.z1:
+  ha_proxy.go_router.servers:
     description: "Array of the router IPs acting as the first group of HTTP/TCP backends"
     default: []
-  router.servers.z2:
-    description: "Array of the router IPs acting as the second group of HTTP/TCP backends"
-    default: []
-  router.port:
-    description: "Listening port for Router"
+  ha_proxy.go_router.port:
+    description: "Listening port for the Go Router"
     default: 80
 
   cc.allow_app_ssh_access:
