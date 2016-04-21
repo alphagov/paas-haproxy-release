@@ -45,6 +45,8 @@ properties:
   ha_proxy.go_router.port:
     description: "Listening port for the Go Router"
     default: 80
+  ha_proxy.additional_frontend_config:
+    description: "Configurations which are passed to the http-in and https-in configuration block"
 
   cc.allow_app_ssh_access:
     default: true

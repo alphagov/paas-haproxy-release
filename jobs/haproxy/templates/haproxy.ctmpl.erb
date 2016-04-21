@@ -30,6 +30,9 @@ frontend http-in
     option forwardfor
     reqadd X-Forwarded-Proto:\ http
     default_backend http-routers
+<% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
+<%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
+<% end %>
 <% end %>
 
 <% if p("ha_proxy.ssl_pem") %>
@@ -40,6 +43,9 @@ frontend https-in
     option forwardfor
     reqadd X-Forwarded-Proto:\ https
     default_backend http-routers
+<% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
+<%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
+<% end %>
 
 frontend ssl-in
     mode tcp
