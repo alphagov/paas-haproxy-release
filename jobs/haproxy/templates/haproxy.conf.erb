@@ -25,7 +25,7 @@ defaults
 <% unless p("ha_proxy.disable_http") %>
 frontend http-in
     mode http
-    bind :80
+    bind :80 accept-proxy
     option httplog
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
@@ -37,9 +37,23 @@ frontend http-in
 <% end %>
 
 <% if p("ha_proxy.ssl_pem") %>
-frontend https-in
-    mode http
+# To implement ELB+SSL+ProxyProtocol, we had to split this frontend in two
+# parts because HAProxy expects the ProxyProtocol header outside of the
+# SSL stream, meanwhile ELB sends it inside. The two configurations are:
+#
+#  * A plain TCP+SSL listener to do the SSL termination, and sends to...
+#  * ...a HTTP frontend which will parse the proxy protocol header.
+#
+# More info here: https://serverfault.com/questions/775010/aws-elb-with-ssl-backend-adds-proxy-protocol-inside-ssl-stream
+listen https-in
+    mode tcp
+    option splice-auto
     bind :443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
+    server https-accept-proxy-in 127.0.0.1:8081
+
+frontend https-accept-proxy-in
+    mode http
+    bind 127.0.0.1:8081 accept-proxy
     option httplog
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
