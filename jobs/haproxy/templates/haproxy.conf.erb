@@ -22,12 +22,30 @@ defaults
     option dontlognull
     <% end %>
 
+<% if_p("ha_proxy.enable_proxy_protocol") do %>
+frontend http-proxy-protocol-in
+    mode http
+    bind :81 accept-proxy
+    option httplog
+    option forwardfor
+    # dst_port will be replaced by the value from Proxy Protocol header.
+    acl is-ssl  dst_port       443
+    reqidel ^X-Forwarded-Proto:.*
+    reqadd X-Forwarded-Proto:\ http if ! is-ssl
+    reqadd X-Forwarded-Proto:\ https if is-ssl
+    default_backend http-routers
+<% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
+<%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
+<% end %>
+<% end %>
+
 <% unless p("ha_proxy.disable_http") %>
 frontend http-in
     mode http
     bind :80
     option httplog
     option forwardfor
+    reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ http
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
@@ -35,12 +53,13 @@ frontend http-in
 <% end %>
 <% end %>
 
-<% if p("ha_proxy.ssl_pem") %>
+<% if_p("ha_proxy.ssl_pem") do %>
 frontend https-in
     mode http
     bind :443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
     option httplog
     option forwardfor
+    reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ https
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
