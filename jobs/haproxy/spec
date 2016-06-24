@@ -50,6 +50,10 @@ properties:
     default: 80
   ha_proxy.additional_frontend_config:
     description: "Configurations which are passed to the http-in and https-in configuration block"
+  ha_proxy.user_agent_frontend:
+    description: |
+      Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
+      Especially useful for gorouter healthcheck.
 
   cc.allow_app_ssh_access:
     default: true
