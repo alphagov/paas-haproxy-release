@@ -72,6 +72,16 @@ frontend ssl-in
     default_backend tcp-routers
 <% end %>
 
+<% if p("ha_proxy.enable_healthcheck_frontend") == "true" do %>
+frontend healthcheck
+    mode http
+    bind :82
+    option httplog
+    reqidel ^User-Agent:.*
+    reqadd User-Agent:\ HTTP-Monitor/1.1
+    default_backend http-routers
+<% end %>
+
 backend http-routers
     mode http
     balance roundrobin
