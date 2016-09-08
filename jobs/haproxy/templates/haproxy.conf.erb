@@ -61,6 +61,7 @@ frontend https-in
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ https
+    http-request add-header Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
 <%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
