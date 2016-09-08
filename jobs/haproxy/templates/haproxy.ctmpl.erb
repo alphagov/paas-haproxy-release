@@ -72,6 +72,15 @@ frontend ssl-in
     default_backend tcp-routers
 <% end %>
 
+<% if p("ha_proxy.enable_http_redirection") %>
+frontend http-redirection
+    mode http
+    bind :83
+    option httplog
+    redirect scheme https code 301
+    default_backend http-routers
+<% end %>
+
 <% if p("ha_proxy.enable_healthcheck_frontend") %>
 frontend healthcheck
     mode http

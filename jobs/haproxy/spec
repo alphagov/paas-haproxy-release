@@ -55,6 +55,8 @@ properties:
       Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
       Especially useful for gorouter healthcheck.
     default: false
+  ha_proxy.enable_http_redirection:
+    description: "Add a redirection from HTTP to HTTPS connection"
 
   cc.allow_app_ssh_access:
     default: true
