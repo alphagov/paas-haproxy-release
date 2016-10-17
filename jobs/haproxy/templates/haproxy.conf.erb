@@ -33,6 +33,10 @@ frontend http-proxy-protocol-in
     reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ http if ! is-ssl
     reqadd X-Forwarded-Proto:\ https if is-ssl
+    <% if p("ha_proxy.hsts.apex_domain") != '' %>
+    acl host_apex hdr(host) -i <%= p('ha_proxy.hsts.apex_domain') %>
+    use_backend http-routers-apex if host_apex
+    <% end %>
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
 <%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
@@ -47,6 +51,10 @@ frontend http-in
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ http
+    <% if p("ha_proxy.hsts.apex_domain") != '' %>
+    acl host_apex hdr(host) -i <%= p('ha_proxy.hsts.apex_domain') %>
+    use_backend http-routers-apex if host_apex
+    <% end %>
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
 <%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
@@ -61,6 +69,10 @@ frontend https-in
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
     reqadd X-Forwarded-Proto:\ https
+    <% if p("ha_proxy.hsts.apex_domain") != '' %>
+    acl host_apex hdr(host) -i <%= p('ha_proxy.hsts.apex_domain') %>
+    use_backend http-routers-apex if host_apex
+    <% end %>
     default_backend http-routers
 <% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
 <%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
@@ -85,10 +97,25 @@ frontend healthcheck
 backend http-routers
     mode http
     balance roundrobin
+    <% if p("ha_proxy.hsts.enable") %>
+    acl no_sts_header res.hdr_cnt(strict-transport-security) eq 0
+    http-response add-header Strict-Transport-Security max-age=31536000 if no_sts_header
+    <% end %>
+    <% p("ha_proxy.go_router.servers").each_with_index do |ip, index| %>
+        server node<%= index %> <%= ip %>:<%= p("ha_proxy.go_router.port") %> check inter 1000
+    <% end %>
+
+<% if p("ha_proxy.hsts.apex_domain") != '' %>
+backend http-routers-apex
+    mode http
+    balance roundrobin
+    acl no_sts_header res.hdr_cnt(strict-transport-security) eq 0
+    http-response add-header Strict-Transport-Security max-age=31536000;\ includeSubDomains;\ preload if no_sts_header
 
     <% p("ha_proxy.go_router.servers").each_with_index do |ip, index| %>
         server node<%= index %> <%= ip %>:<%= p("ha_proxy.go_router.port") %> check inter 1000
     <% end %>
+<% end %>
 
 backend tcp-routers
     mode tcp

@@ -55,7 +55,14 @@ properties:
       Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
       Especially useful for gorouter healthcheck.
     default: false
-
+  ha_proxy.hsts.enable:
+    description: Enable serving HSTS headers on all HTTP responses
+    default: false
+  ha_proxy.hsts.apex_domain:
+    description: |
+      Domain apex on which to serve HSTS preload headers
+      Leave blank to disable preload on apex domain
+    default: ''
   cc.allow_app_ssh_access:
     default: true
     description: "Allow users to change the value of the app-level allow_ssh attribute"
