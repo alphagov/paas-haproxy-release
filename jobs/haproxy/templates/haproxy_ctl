@@ -46,8 +46,10 @@ configure_syslog() {
         chmod 755 "${LOG_DIR}"
     fi
 
-    cp $SYSLOG_CONFIG /etc/rsyslog.d/01-haproxy_syslog.conf
-    /usr/sbin/service rsyslog restart
+    if ! cmp $SYSLOG_CONFIG /etc/rsyslog.d/01-haproxy_syslog.conf; then
+        cp $SYSLOG_CONFIG /etc/rsyslog.d/01-haproxy_syslog.conf
+        /usr/sbin/service rsyslog restart
+    fi
 }
 
 start_haproxy() {
