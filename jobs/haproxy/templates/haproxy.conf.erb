@@ -26,6 +26,7 @@ defaults
 frontend http-proxy-protocol-in
     mode http
     bind :81 accept-proxy
+    capture request header Host len 128
     option httplog
     option forwardfor
     # dst_port will be replaced by the value from Proxy Protocol header.
@@ -43,6 +44,7 @@ frontend http-proxy-protocol-in
 frontend http-in
     mode http
     bind :80
+    capture request header Host len 128
     option httplog
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
@@ -57,6 +59,7 @@ frontend http-in
 frontend https-in
     mode http
     bind :443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
+    capture request header Host len 128
     option httplog
     option forwardfor
     reqidel ^X-Forwarded-Proto:.*
