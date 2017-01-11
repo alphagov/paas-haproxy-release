@@ -97,19 +97,3 @@ backend tcp-routers
     <% p("ha_proxy.go_router.servers").each_with_index do |ip, index| %>
         server node<%= index %> <%= ip %>:<%= p("ha_proxy.go_router.port") %> check inter 1000
     <% end %>
-
-<% if p("cc.allow_app_ssh_access") %>
-{{$services := service "ssh-proxy" "passing"}}
-{{if $services}}
-frontend ssh
-    mode tcp
-    bind :<%= p("app_ssh.port") %>
-    default_backend ssh
-
-backend ssh
-    mode tcp
-    balance leastconn{{range $services}}
-    server {{.Node}} {{.Address}}:2222{{end}}
-    timeout server 2h
-{{end}}
-<% end %>
