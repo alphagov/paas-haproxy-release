@@ -55,24 +55,21 @@ frontend http-in
 <% end %>
 <% end %>
 
-<% if_p("ha_proxy.ssl_pem") do %>
-frontend https-in
-    mode http
+<% if p("ha_proxy.ssl_pem") %>
+# To implement ELB+SSL+ProxyProtocol, we had to split this frontend in two
+# parts because HAProxy expects the ProxyProtocol header outside of the
+# SSL stream, meanwhile ELB sends it inside. The two configurations are:
+#
+#  * A plain TCP+SSL listener to do the SSL termination, and sends to...
+#  * ...a HTTP frontend which will parse the proxy protocol header.
+#
+# More info here: https://serverfault.com/questions/775010/aws-elb-with-ssl-backend-adds-proxy-protocol-inside-ssl-stream
+listen https-in
+    mode tcp
+    option splice-auto
     bind :443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
     capture request header Host len 128
-    option httplog
-    option forwardfor
-    reqidel ^X-Forwarded-Proto:.*
-    reqadd X-Forwarded-Proto:\ https
-    default_backend http-routers
-<% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
-<%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
-<% end %>
-
-frontend ssl-in
-    mode tcp
-    bind :4443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
-    default_backend tcp-routers
+    server http-proxy-protocol-in 127.0.0.1:81
 <% end %>
 
 <% if p("ha_proxy.enable_healthcheck_frontend") %>
@@ -100,19 +97,3 @@ backend tcp-routers
     <% p("ha_proxy.go_router.servers").each_with_index do |ip, index| %>
         server node<%= index %> <%= ip %>:<%= p("ha_proxy.go_router.port") %> check inter 1000
     <% end %>
-
-<% if p("cc.allow_app_ssh_access") %>
-{{$services := service "ssh-proxy" "passing"}}
-{{if $services}}
-frontend ssh
-    mode tcp
-    bind :<%= p("app_ssh.port") %>
-    default_backend ssh
-
-backend ssh
-    mode tcp
-    balance leastconn{{range $services}}
-    server {{.Node}} {{.Address}}:2222{{end}}
-    timeout server 2h
-{{end}}
-<% end %>
