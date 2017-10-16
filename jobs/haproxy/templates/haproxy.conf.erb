@@ -55,6 +55,15 @@ frontend http-in
 <% end %>
 <% end %>
 
+<% if p("ha_proxy.enable_http_redirect_frontend") %>
+frontend http-redirect-in
+    mode http
+    bind :83
+    capture request header Host len 128
+    option httplog
+    http-request redirect code 301 location https://%[hdr(host)]/
+<% end %>
+
 <% if p("ha_proxy.ssl_pem") %>
 # To implement ELB+SSL+ProxyProtocol, we had to split this frontend in two
 # parts because HAProxy expects the ProxyProtocol header outside of the

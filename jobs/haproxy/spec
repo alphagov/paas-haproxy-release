@@ -53,3 +53,8 @@ properties:
       Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
       Especially useful for gorouter healthcheck.
     default: false
+  ha_proxy.enable_http_redirect_frontend:
+    description: |
+      Add a frontend on port 83 that redirects all http requests to the
+      corresponding https root endpoint.
+    default: false
