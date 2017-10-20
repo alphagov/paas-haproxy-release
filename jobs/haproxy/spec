@@ -8,10 +8,8 @@ packages:
 
 templates:
   haproxy.conf.erb:          config/haproxy.conf
-  haproxy.ctmpl.erb:         config/haproxy.ctmpl
   haproxy_syslog.conf.erb:   config/haproxy_syslog.conf
   haproxy_ctl:               bin/haproxy_ctl
-  consul_template_ctl:       bin/consul_template_ctl
   cert.pem.erb:              config/cert.pem
 
 properties:
@@ -55,11 +53,8 @@ properties:
       Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
       Especially useful for gorouter healthcheck.
     default: false
-
-  cc.allow_app_ssh_access:
-    default: true
-    description: "Allow users to change the value of the app-level allow_ssh attribute"
-
-  app_ssh.port:
-    description: "External port for SSH access to application instances"
-    default: 2222
+  ha_proxy.enable_http_redirect_frontend:
+    description: |
+      Add a frontend on port 83 that redirects all http requests to the
+      corresponding https root endpoint.
+    default: false
