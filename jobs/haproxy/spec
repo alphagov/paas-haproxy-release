@@ -11,10 +11,14 @@ templates:
   haproxy_syslog.conf.erb:   config/haproxy_syslog.conf
   haproxy_ctl:               bin/haproxy_ctl
   cert.pem.erb:              config/cert.pem
+  uaa_cert.pem.erb:          config/uaa_cert.pem
 
 properties:
   ha_proxy.ssl_pem:
     description: "SSL certificate (PEM file)"
+    default: ~
+  ha_proxy.uaa_ssl_pem:
+    description: "UAA SSL certificate (PEM file)"
     default: ~
   ha_proxy.disable_http:
     description: "Disable port 80 traffic"
