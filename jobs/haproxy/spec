@@ -46,12 +46,14 @@ properties:
   ha_proxy.go_router.port:
     description: "Listening port for the Go Router"
     default: 80
+  ha_proxy.go_router.healthcheck_port:
+    description: "Listening port for the Go Router health check"
+    default: 8080
   ha_proxy.additional_frontend_config:
     description: "Configurations which are passed to the http-in and https-in configuration block"
   ha_proxy.enable_healthcheck_frontend:
     description: |
-      Add a frontend to set 'User-Agent: HTTP-Monitor/1.1' header on requests to backend.
-      Especially useful for gorouter healthcheck.
+      Add a frontend for health checks on port 82.
     default: false
   ha_proxy.enable_http_redirect_frontend:
     description: |

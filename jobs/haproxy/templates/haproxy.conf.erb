@@ -86,9 +86,15 @@ frontend healthcheck
     mode http
     bind :82
     option httplog
-    reqidel ^User-Agent:.*
-    reqadd User-Agent:\ HTTP-Monitor/1.1
-    default_backend http-routers
+    default_backend http-healthcheck-routers
+
+backend http-healthcheck-routers
+    mode http
+    balance roundrobin
+
+    <% p("ha_proxy.go_router.servers").each_with_index do |ip, index| %>
+        server node<%= index %> <%= ip %>:<%= p("ha_proxy.go_router.healthcheck_port") %> check inter 1000
+    <% end %>
 <% end %>
 
 backend http-routers
