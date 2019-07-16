@@ -40,6 +40,19 @@ frontend http-proxy-protocol-in
 <% end %>
 <% end %>
 
+<% if_p("ha_proxy.enable_proxy_frontend") do %>
+frontend https-proxy-in
+    mode http
+    bind :8443 ssl crt /var/vcap/jobs/haproxy/config/cert.pem no-sslv3 ciphers <%= p("ha_proxy.ssl_ciphers") %>
+    capture request header Host len 128
+    option httplog
+    option forwardfor
+    default_backend http-routers
+<% if_p("ha_proxy.additional_frontend_config") do |additional_config| %>
+<%= additional_config.split("\n").map{|x| "    #{x}"}.join("\n") %>
+<% end %>
+<% end %>
+
 <% unless p("ha_proxy.disable_http") %>
 frontend http-in
     mode http
